@@ -5,10 +5,26 @@ export interface IBlockProps extends PropsWithChildren {
     x: number;
     y: number;
     className?: string;
+    borderColor?: string;
+    fontSize?: string;
+    lineHeight?: string;
+    paddingX?: string;
     onMouseMove?: (newX: number, newY: number) => void;
 }
 
-const Block: FC<IBlockProps> = ({ x, y, children, className, onMouseMove }) => {
+const Block: FC<IBlockProps> = (
+    {
+        x,
+        y,
+        children,
+        className,
+        onMouseMove,
+        borderColor,
+        fontSize,
+        lineHeight,
+        paddingX,
+    }
+) => {
     const [isDragging, setIsDragging] = useState<boolean>(false);
     const [dragOffsetX, setDragOffsetX] = useState<number>(0);
     const [dragOffsetY, setDragOffsetY] = useState<number>(0);
@@ -46,7 +62,16 @@ const Block: FC<IBlockProps> = ({ x, y, children, className, onMouseMove }) => {
 
     return (
         <div
-            style={{ top: y, left: x }}
+            style={
+                {
+                    top: y,
+                    left: x,
+                    borderColor: borderColor,
+                    fontSize: fontSize,
+                    lineHeight: lineHeight,
+                    padding: `0 ${paddingX}`
+                }
+            }
             className={className ? `block ${className}` : 'block'}
             onMouseDown={handleMouseDown}
         >

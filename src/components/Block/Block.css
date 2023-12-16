@@ -4,7 +4,7 @@
     align-items: center;
     position: absolute;
     padding: 10px;
-    border: 5px purple   solid;
+    border: 5px black solid;
     border-radius: 20px;
     user-select: none;
 }
