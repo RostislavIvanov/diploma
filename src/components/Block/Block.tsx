@@ -1,4 +1,4 @@
-import React, { FC, PropsWithChildren, useState } from "react";
+import { FC, PropsWithChildren, useEffect, useState } from "react";
 import './Block.css';
 
 interface IBlockProps extends PropsWithChildren {
@@ -10,25 +10,34 @@ interface IBlockProps extends PropsWithChildren {
 
 const Block: FC<IBlockProps> = ({ x, y, children, className, onMouseMove }) => {
     const [isDragging, setIsDragging] = useState(false);
-    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-    const handleMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        setIsDragging(true);
-        const offsetX = event.clientX - x;
-        const offsetY = event.clientY - y;
-        setDragOffset({ x: offsetX, y: offsetY });
-    };
+    useEffect(() => {
+        const handleGlobalMouseUp = () => {
+            setIsDragging(false);
+        };
 
-    const handleMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        const handleGlobalMouseMove = (event: MouseEvent) => {
+            const offsetX = event.clientX;
+            const offsetY = event.clientY;
+
+            if (isDragging && onMouseMove) {
+                onMouseMove(offsetX, offsetY);
+            }
+        };
+
         if (isDragging) {
-            const newX = event.clientX - dragOffset.x;
-            const newY = event.clientY - dragOffset.y;
-            onMouseMove && onMouseMove(newX, newY);
+            document.addEventListener("mousemove", handleGlobalMouseMove);
+            document.addEventListener("mouseup", handleGlobalMouseUp);
         }
-    };
 
-    const handleMouseUp = () => {
-        setIsDragging(false);
+        return () => {
+            document.removeEventListener("mousemove", handleGlobalMouseMove);
+            document.removeEventListener("mouseup", handleGlobalMouseUp);
+        };
+    }, [isDragging, onMouseMove])
+
+    const handleMouseDown = (): void => {
+        setIsDragging(true);
     };
 
     return (
@@ -36,8 +45,6 @@ const Block: FC<IBlockProps> = ({ x, y, children, className, onMouseMove }) => {
             style={{ top: y, left: x }}
             className={className ? `block ${className}` : 'block'}
             onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
         >
             {children}
         </div>
