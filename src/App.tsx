@@ -2,6 +2,7 @@ import { useState } from "react";
 import Block, { IBlockProps } from "./components/Block/Block.tsx";
 import Arrow, { IArrowProps } from "./components/Arrow/Arrow.tsx";
 import './App.css';
+import Modal from "./components/Modal/Modal.tsx";
 
 type IArrow = IArrowProps & { id: number };
 type IBlock = IBlockProps & { id: number, content: string };
@@ -9,13 +10,18 @@ type IBlock = IBlockProps & { id: number, content: string };
 const App = () => {
     const [blocks, setBlocks] = useState<IBlock[]>([]);
     const [arrows, setArrows] = useState<IArrow[]>([]);
+    const [showModal, setShowModal] = useState<boolean>(false);
 
-    const addBlock = (): void => {
+    const addBlock = (content: string, paddingX: string, borderColor: string, fontSize: string, lineHeight: string): void => {
         const newBlock: IBlock = {
             id: Math.random(),
             x: window.innerWidth / 2 - 50,
             y: window.innerHeight / 2 - 25,
-            content: 'Новый блок'
+            content: content,
+            borderColor: borderColor,
+            paddingX,
+            fontSize,
+            lineHeight,
         };
 
         setBlocks([...blocks, newBlock]);
@@ -47,6 +53,14 @@ const App = () => {
         setArrows(updatedArrows);
     };
 
+    const handleAddBlock = () => {
+        setShowModal(true);
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
+    };
+
     return (
         <div style={{ position: 'relative', width: '100%', height: '100vh', border: '1px solid #ccc' }}>
             {blocks.map(block => (
@@ -55,6 +69,9 @@ const App = () => {
                     x={block.x}
                     y={block.y}
                     className={block.className}
+                    borderColor={block.borderColor}
+                    fontSize={block.fontSize}
+                    lineHeight={block.lineHeight}
                     onMouseMove={(newX, newY) => handleBlockMove(block.id, newX, newY)}
                 >
                     {block.content}
@@ -72,10 +89,17 @@ const App = () => {
                 />
             ))}
             <div style={{ display: 'flex', justifyContent: "flex-end" }}>
-                <button onClick={addBlock}>Добавить блок</button>
-                <button onClick={addArrow}>Добавить стрелку</button>
+                <button className={'button'} onClick={handleAddBlock}>Добавить блок</button>
+                <button className={'button'} onClick={addArrow}>Добавить стрелку</button>
             </div>
-
+            {showModal && (
+                <Modal
+                    onClose={closeModal}
+                    onSave={(content: string, paddingX: string, borderColor: string, fontSize: string, lineHeight: string) =>
+                        addBlock(content, paddingX, borderColor, fontSize, lineHeight)
+                    }
+                />
+            )}
         </div>
     );
 };
