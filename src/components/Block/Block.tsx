@@ -1,7 +1,7 @@
 import React, { FC, PropsWithChildren, useEffect, useState } from "react";
 import './Block.css';
 
-interface IBlockProps extends PropsWithChildren {
+export interface IBlockProps extends PropsWithChildren {
     x: number;
     y: number;
     className?: string;
