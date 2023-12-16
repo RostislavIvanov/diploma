@@ -1,56 +1,87 @@
-import { FC } from "react";
+import React, { FC, useState, useEffect } from "react";
 
-interface IArrowProps {
+export interface IArrowProps {
     startX: number;
     startY: number;
     endX: number;
     endY: number;
+    onMouseMove?: (newStartX: number, newStartY: number, newEndX: number, newEndY: number) => void;
 }
-const Arrow:FC<IArrowProps> = ({ startX, startY, endX, endY }) => {
-    const dx = endX - startX;
-    const dy = endY - startY;
-    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-    const length = Math.sqrt(dx * dx + dy * dy);
+
+const Arrow: FC<IArrowProps> = ({ startX, startY, endX, endY, onMouseMove }) => {
+    const [isArrowStartDragging, setIsArrowStartDragging] = useState<boolean>(false);
+    const [isArrowEndDragging, setIsArrowEndDragging] = useState<boolean>(false);
+    const [dragOffsetX, setDragOffsetX] = useState<number>(0);
+    const [dragOffsetY, setDragOffsetY] = useState<number>(0);
+    const circleRadius = 10;
+    
+    useEffect(() => {
+        const handleMouseUp = () => {
+            setIsArrowStartDragging(false);
+            setIsArrowEndDragging(false);
+        };
+
+        const handleMouseMove = (event: MouseEvent) => {
+            const offsetX = event.clientX - dragOffsetX;
+            const offsetY = event.clientY - dragOffsetY;
+
+            if (isArrowStartDragging && onMouseMove) {
+                onMouseMove(offsetX, offsetY, endX, endY);
+            } else if (isArrowEndDragging && onMouseMove) {
+                onMouseMove(startX, startY, offsetX, offsetY);
+            }
+        };
+
+        if (isArrowStartDragging || isArrowEndDragging) {
+            document.addEventListener("mousemove", handleMouseMove);
+            document.addEventListener("mouseup", handleMouseUp);
+        }
+
+        return () => {
+            document.removeEventListener("mousemove", handleMouseMove);
+            document.removeEventListener("mouseup", handleMouseUp);
+        };
+    }, [isArrowStartDragging, isArrowEndDragging, onMouseMove, endX, endY, startX, startY, dragOffsetX, dragOffsetY]);
+
+    const handleArrowStartMouseDown = (event: React.MouseEvent<SVGCircleElement>): void => {
+        setIsArrowStartDragging(true);
+        setDragOffsetX(event.clientX - startX);
+        setDragOffsetY(event.clientY - startY);
+    };
+
+    const handleArrowEndMouseDown = (event: React.MouseEvent<SVGCircleElement>): void => {
+        setIsArrowEndDragging(true);
+        setDragOffsetX(event.clientX - endX);
+        setDragOffsetY(event.clientY - endY);
+    };
 
     return (
-        <svg style={{
-            position: 'absolute',
-            width: length,
-            height: '20px',
-            transform: `translate(${startX}px, ${startY}px) rotate(${angle}deg)`,
-            zIndex: 2
-        }}>
+        <svg
+            style={{ position: 'absolute', overflow: "visible", width: '1px', height: '1px'}}
+        >
             <line
-                x1="10"
-                y1="10"
-                x2={length}
-                y2="10"
-                strokeWidth={'5'}
+                x1={startX}
+                y1={startY}
+                x2={endX}
+                y2={endY}
+                strokeWidth={circleRadius / 2}
                 stroke={'purple'}
             />
             <circle
-                cx={'10'}
-                cy={'10'}
-                r={10}
+                cx={startX}
+                cy={startY}
+                r={circleRadius}
                 fill={'purple'}
+                onMouseDown={handleArrowStartMouseDown}
+                style={{ cursor: 'grab' }}
             />
             <circle
-                cx={'10'}
-                cy={'10'}
-                r={5}
-                fill={'white'}
-            />
-            <circle
-                cx={length - 10}
-                cy={'10'}
-                r={10}
+                cx={endX}
+                cy={endY}
+                r={circleRadius}
                 fill={'purple'}
-            />
-            <circle
-                cx={length - 10}
-                cy={'10'}
-                r={5}
-                fill={'white'}
+                onMouseDown={handleArrowEndMouseDown}
+                style={{ cursor: 'grab' }}
             />
         </svg>
     );
