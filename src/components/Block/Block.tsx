@@ -1,4 +1,4 @@
-import { FC, PropsWithChildren, useEffect, useState } from "react";
+import React, { FC, PropsWithChildren, useEffect, useState } from "react";
 import './Block.css';
 
 interface IBlockProps extends PropsWithChildren {
@@ -9,7 +9,9 @@ interface IBlockProps extends PropsWithChildren {
 }
 
 const Block: FC<IBlockProps> = ({ x, y, children, className, onMouseMove }) => {
-    const [isDragging, setIsDragging] = useState(false);
+    const [isDragging, setIsDragging] = useState<boolean>(false);
+    const [dragOffsetX, setDragOffsetX] = useState<number>(0);
+    const [dragOffsetY, setDragOffsetY] = useState<number>(0);
 
     useEffect(() => {
         const handleGlobalMouseUp = () => {
@@ -17,8 +19,8 @@ const Block: FC<IBlockProps> = ({ x, y, children, className, onMouseMove }) => {
         };
 
         const handleGlobalMouseMove = (event: MouseEvent) => {
-            const offsetX = event.clientX;
-            const offsetY = event.clientY;
+            const offsetX = event.clientX - dragOffsetX;
+            const offsetY = event.clientY - dragOffsetY;
 
             if (isDragging && onMouseMove) {
                 onMouseMove(offsetX, offsetY);
@@ -34,10 +36,12 @@ const Block: FC<IBlockProps> = ({ x, y, children, className, onMouseMove }) => {
             document.removeEventListener("mousemove", handleGlobalMouseMove);
             document.removeEventListener("mouseup", handleGlobalMouseUp);
         };
-    }, [isDragging, onMouseMove])
+    }, [isDragging, onMouseMove, dragOffsetX, dragOffsetY]);
 
-    const handleMouseDown = (): void => {
+    const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>): void => {
         setIsDragging(true);
+        setDragOffsetX(event.clientX - x);
+        setDragOffsetY(event.clientY - y);
     };
 
     return (
