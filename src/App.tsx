@@ -1,24 +1,36 @@
 import { useState } from "react";
-import Block from "./components/Block/Block.tsx";
-import Arrow from "./components/Arrow/Arrow.tsx";
+import Block, { IBlockProps } from "./components/Block/Block.tsx";
+import Arrow, { IArrowProps } from "./components/Arrow/Arrow.tsx";
 import './App.css';
 
-const App = () => {
-    const [blocks, setBlocks] = useState([
-        { id: 1, x: 50, y: 50, content: 'Изображение' },
-        { id: 2, x: 50, y: 150, content: 'Экспозиция +10' },
-        { id: 3, x: 300, y: 80, content: 'Светлое изображение', className: 'big' }
-    ]);
+type IArrow = IArrowProps & { id: number };
+type IBlock = IBlockProps & { id: number, content: string };
 
-    const addBlock = () => {
-        const newBlock = {
-            id: Math.random(), // Генерируем случайный ID (можно использовать UUID для более уникальных значений)
-            x: 50,
-            y: 250, // Задайте начальное положение нового блока
-            content: 'Новый блок' // Задайте содержимое нового блока
+const App = () => {
+    const [blocks, setBlocks] = useState<IBlock[]>([]);
+    const [arrows, setArrows] = useState<IArrow[]>([]);
+
+    const addBlock = (): void => {
+        const newBlock: IBlock = {
+            id: Math.random(),
+            x: window.innerWidth / 2 - 50,
+            y: window.innerHeight / 2 - 25,
+            content: 'Новый блок'
         };
 
         setBlocks([...blocks, newBlock]);
+    };
+
+    const addArrow = (): void => {
+        const newArrow: IArrow = {
+            id: Math.random(),
+            startX: window.innerWidth / 2 - 50,
+            startY: window.innerHeight / 2,
+            endX: window.innerWidth / 2 + 50,
+            endY: window.innerHeight / 2,
+        };
+
+        setArrows([...arrows, newArrow]);
     };
 
     const handleBlockMove = (id: number, newX: number, newY: number) => {
@@ -26,6 +38,13 @@ const App = () => {
             block.id === id ? { ...block, x: newX, y: newY } : block
         );
         setBlocks(updatedBlocks);
+    };
+
+    const handleArrowMove = (id: number, newStartX: number, newStartY: number, newEndX: number, newEndY: number) => {
+        const updatedArrows = arrows.map(arrow =>
+            arrow.id === id ? { ...arrow, startX: newStartX, startY: newStartY, endX: newEndX, endY: newEndY } : arrow
+        );
+        setArrows(updatedArrows);
     };
 
     return (
@@ -41,9 +60,22 @@ const App = () => {
                     {block.content}
                 </Block>
             ))}
-            <Arrow startX={183} startY={80} endX={308} endY={120} />
-            <Arrow startX={195} startY={148} endX={308} endY={110} />
-            <button onClick={addBlock}>Добавить блок</button>
+            {arrows.map(arrow => (
+                <Arrow
+                    key={arrow.id}
+                    startX={arrow.startX}
+                    startY={arrow.startY}
+                    endX={arrow.endX}
+                    endY={arrow.endY}
+                    onMouseMove={(newStartX, newStartY, newEndX, newEndY) =>
+                        handleArrowMove(arrow.id, newStartX, newStartY, newEndX, newEndY)}
+                />
+            ))}
+            <div style={{ display: 'flex', justifyContent: "flex-end" }}>
+                <button onClick={addBlock}>Добавить блок</button>
+                <button onClick={addArrow}>Добавить стрелку</button>
+            </div>
+
         </div>
     );
 };
